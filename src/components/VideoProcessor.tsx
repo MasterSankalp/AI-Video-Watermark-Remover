@@ -15,6 +15,7 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
   const [progress, setProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(null);
+  const [watermarksFound, setWatermarksFound] = useState(0);
   
   useEffect(() => {
     if (!videoFile) return;
@@ -41,13 +42,19 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(analyzeInterval);
+          // Simulate finding watermarks
+          setWatermarksFound(Math.floor(Math.random() * 5) + 1);
+          toast({
+            title: "Analysis complete",
+            description: `Found ${watermarksFound} potential watermarks in the video.`,
+          });
           setProcessStage('processing');
           simulateBackgroundRemoval();
           return 100;
         }
-        return prev + 5;
+        return prev + 2; // Slower progress for more realistic experience
       });
-    }, 100);
+    }, 200);
   };
   
   const simulateBackgroundRemoval = () => {
@@ -68,9 +75,9 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
           });
           return 100;
         }
-        return prev + 2;
+        return prev + 1; // Even slower for more realistic processing time (about 1 minute)
       });
-    }, 100);
+    }, 600);
   };
   
   const downloadVideo = () => {
@@ -139,8 +146,10 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
               <Progress value={progress} className="w-full" />
               <p className="text-sm text-muted-foreground">
                 {processStage === 'analyzing'
-                  ? 'Scanning for text, watermarks, and objects...'
-                  : 'Processing video frames, this may take a few minutes'}
+                  ? 'Zooming and scanning for text, watermarks, and objects...'
+                  : watermarksFound > 0 
+                    ? `Removing ${watermarksFound} watermarks and background, this may take a minute...`
+                    : 'Processing video frames, this may take a minute...'}
               </p>
             </div>
           </div>
@@ -163,14 +172,29 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
       <div className="md:col-span-2 flex flex-wrap justify-center gap-4 mt-4">
         {processStage === 'completed' ? (
           <>
-            <Button 
-              variant="default" 
-              className="gap-2 bg-gradient-to-r from-purple-600 to-primary hover:from-purple-700 hover:to-primary/90 transition-all duration-300"
+            <button 
               onClick={downloadVideo}
+              className="download-button"
             >
-              <Download className="h-4 w-4" />
-              <span>Download Processed Video</span>
-            </Button>
+              <svg
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+                height="24"
+                width="24"
+                className="download-button__icon"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                <path d="M7 11l5 5l5 -5"></path>
+                <path d="M12 4l0 12"></path>
+              </svg>
+              <span>Download</span>
+            </button>
             <Button 
               variant="outline" 
               className="gap-2" 

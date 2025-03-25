@@ -38,11 +38,11 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
     }
   }, []);
   
-  const handleButtonClick = () => {
+  const handleButtonClick = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  };
+  }, []);
   
   const processFile = (file: File) => {
     if (!file) return;
@@ -81,7 +81,6 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={handleButtonClick}
       >
         {isUploading ? (
           <div className="w-full flex flex-col items-center gap-4">
@@ -108,7 +107,11 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
               ref={fileInputRef}
               onChange={handleFileChange} 
             />
-            <Button variant="outline" className="gap-2 animate-fade-in">
+            <Button 
+              variant="outline" 
+              className="gap-2 animate-fade-in" 
+              onClick={handleButtonClick}
+            >
               <Upload className="h-4 w-4" />
               <span>Select Video</span>
             </Button>
