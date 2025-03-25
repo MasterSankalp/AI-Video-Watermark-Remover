@@ -1,6 +1,6 @@
 
-import React, { useCallback, useState } from 'react';
-import { Cloud, FileVideo, FileX, Upload } from 'lucide-react';
+import React, { useCallback, useState, useRef } from 'react';
+import { Cloud, FileVideo, Upload } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +13,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -36,6 +37,12 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
       processFile(e.target.files[0]);
     }
   }, []);
+  
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
   
   const processFile = (file: File) => {
     if (!file) return;
@@ -74,11 +81,12 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={handleButtonClick}
       >
         {isUploading ? (
           <div className="w-full flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Cloud className="h-8 w-8 text-primary animate-pulse" />
+              <div className="loader"></div>
             </div>
             <h3 className="text-lg font-medium">Uploading video...</h3>
             <Progress value={uploadProgress} className="w-full max-w-md" />
@@ -97,14 +105,13 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onVideoUploaded }) => {
               accept="video/*" 
               className="hidden" 
               id="video-upload" 
+              ref={fileInputRef}
               onChange={handleFileChange} 
             />
-            <label htmlFor="video-upload">
-              <Button variant="outline" className="gap-2 animate-fade-in">
-                <Upload className="h-4 w-4" />
-                <span>Select Video</span>
-              </Button>
-            </label>
+            <Button variant="outline" className="gap-2 animate-fade-in">
+              <Upload className="h-4 w-4" />
+              <span>Select Video</span>
+            </Button>
           </>
         )}
       </div>

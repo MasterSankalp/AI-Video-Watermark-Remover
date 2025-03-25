@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Loader2, Play, Trash2, Download } from 'lucide-react';
+import { CheckCircle, Play, Trash2, Download, Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
@@ -36,7 +36,7 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
     setProcessStage('analyzing');
     setProgress(0);
     
-    // Simulate analysis
+    // Simulate analysis - looking for watermarks
     const analyzeInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -64,7 +64,7 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
           if (videoUrl) setProcessedVideoUrl(videoUrl);
           toast({
             title: "Processing complete",
-            description: "Your video background has been removed successfully!",
+            description: "Your video background and watermarks have been removed successfully!",
           });
           return 100;
         }
@@ -116,15 +116,32 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
           <div className="h-full flex flex-col items-center justify-center gap-6 py-10">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-              <div className="relative w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-                <Loader2 className="h-10 w-10 text-primary animate-spin" />
-              </div>
+              {processStage === 'analyzing' ? (
+                <div className="relative w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+                  <Crosshair className="h-10 w-10 text-primary animate-pulse" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="loader"></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+                  <div className="loader"></div>
+                </div>
+              )}
             </div>
             
             <div className="text-center space-y-2 w-full max-w-xs">
-              <h4 className="font-medium">{processStage === 'analyzing' ? 'Analyzing video...' : 'Removing background...'}</h4>
+              <h4 className="font-medium">
+                {processStage === 'analyzing' 
+                  ? 'Analyzing video for watermarks...' 
+                  : 'Removing background and watermarks...'}
+              </h4>
               <Progress value={progress} className="w-full" />
-              <p className="text-sm text-muted-foreground">This may take a few minutes depending on video length</p>
+              <p className="text-sm text-muted-foreground">
+                {processStage === 'analyzing'
+                  ? 'Scanning for text, watermarks, and objects...'
+                  : 'Processing video frames, this may take a few minutes'}
+              </p>
             </div>
           </div>
         ) : (
@@ -148,11 +165,11 @@ const VideoProcessor: React.FC<VideoProcessorProps> = ({ videoFile, onReset }) =
           <>
             <Button 
               variant="default" 
-              className="gap-2" 
+              className="gap-2 bg-gradient-to-r from-purple-600 to-primary hover:from-purple-700 hover:to-primary/90 transition-all duration-300"
               onClick={downloadVideo}
             >
               <Download className="h-4 w-4" />
-              <span>Download</span>
+              <span>Download Processed Video</span>
             </Button>
             <Button 
               variant="outline" 
